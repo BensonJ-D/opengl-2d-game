@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <glad/glad.h>
+#include <string>
 
 typedef long LONG;
 typedef unsigned short WORD;
@@ -20,7 +21,7 @@ class Image
         unsigned int width;
         GLuint id;
         Image() {};
-        Image(const char* Filename);
+        Image(std::string filename);
         ~Image();
 };
 //
@@ -43,7 +44,7 @@ class Image
 class PNG: public Image
 {
 public:
-    PNG(const char* Filename, bool keepData);
+    PNG(std::string filename, bool keepData);
     BYTE* pixelData;
     
 private:

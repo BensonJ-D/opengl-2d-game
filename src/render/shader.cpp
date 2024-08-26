@@ -3,7 +3,7 @@
 #include <iostream>
 namespace fs = std::filesystem;
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
+Shader::Shader(std::string vertexPath, std::string fragmentPath)
 {
     // 1. retrieve the vertex/fragment source code from filePath
     std::string vertexCode;

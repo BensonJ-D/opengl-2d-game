@@ -2,18 +2,16 @@
 #include <experimental/coroutine>
 #include <filesystem>
 #include <iostream>
+
 namespace fs = std::filesystem;
 
-WindowManager Window;
-
-std::map<const char*, Image*> images;
 KeyState KeyStates[256];
 
 GLFWwindow* WindowManager::createWindow(int width, int height)
 {
     if (!glfwInit()) {
         std::cout << "Failed to initialise GLFW" << std::endl;
-        return;
+        return NULL;
     }
     
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -31,7 +29,7 @@ GLFWwindow* WindowManager::createWindow(int width, int height)
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         mWindow = window;
-        return;
+        return mWindow;
     }
     
     glfwMakeContextCurrent(window);
@@ -40,7 +38,7 @@ GLFWwindow* WindowManager::createWindow(int width, int height)
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         mWindow = window;
-        return;
+        return mWindow;
     }
 
     glfwMakeContextCurrent(window);

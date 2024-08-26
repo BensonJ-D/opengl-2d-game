@@ -1,10 +1,3 @@
-//
-//  image.cpp
-//  C++ Test
-//
-//  Created by James Benson on 13/5/24.
-//
-
 #include "image.hpp"
 #include <libpng/png.h>
 
@@ -33,12 +26,12 @@ void png_read(png_structp png_ptr, png_bytep data, png_size_t length)
         png_error(png_ptr, "Read Error");
 }
 
-Image::Image(const char* Filename)
+Image::Image(std::string filename)
 {
-    hfile = fopen((char*)Filename, "rb");
+    hfile = fopen(filename.c_str(), "rb");
     if(hfile == NULL)
     {
-        printf("Path name: %s\n", Filename);
+        printf("Path name: %s\n", filename.c_str());
         printf("Could not locate referenced image. Exiting\n");
         system("pause");
         exit(1);
@@ -63,7 +56,7 @@ Image::Image(const char* Filename)
     {
         printf("PNG\n");
         fclose(hfile);
-        PNG* img = new PNG(Filename,  true);
+        PNG* img = new PNG(filename.c_str(), true);
         height = img->height;
         width = img->width;
         id = img->id;
@@ -76,7 +69,7 @@ Image::Image(const char* Filename)
 
 Image::~Image(){};
 
-PNG::PNG(const char* Filename, bool keepData)
+PNG::PNG(std::string filename, bool keepData)
 {
     png_structp pngPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!pngPtr)
@@ -93,7 +86,7 @@ PNG::PNG(const char* Filename, bool keepData)
         exit(9);
 
     }
-    hfile = fopen((char*)Filename, "rb");
+    hfile = fopen(filename.c_str(), "rb");
 
     png_set_read_fn(pngPtr, (png_voidp)hfile, png_read);
 

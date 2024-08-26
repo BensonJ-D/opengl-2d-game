@@ -1,3 +1,4 @@
+#include "../manager/image_manager.hpp"
 #include "../manager/window_manager.hpp"
 #include "../render/shader.hpp"
 #include "../interface/camera.hpp"
@@ -116,10 +117,12 @@ int start()
 {
     WindowManager* windowManager = new WindowManager();
     GLFWwindow* window = windowManager->createWindow(800, 600);
+
+    ImageManager* imageManager = new ImageManager();
+    Image* image = imageManager->loadImage("player", "Resources/Images/Player.png");
     
-    Shader shaderProgram("Resources/shaders/vertex_shader.vs", "Resources/shaders/fragment_shader.fs");
+    Shader shaderProgram("Resources/Shaders/vertex_shader.vs", "Resources/Shaders/fragment_shader.fs");
     
-    Image* image = images["player"];
     auto [ VBO, VAO, EBO ] = GenerateImage ();
     
     std::cout << "Counter" << std::endl;

@@ -13,7 +13,7 @@ public:
     unsigned int ID;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
-    Shader(const char* vertexPath, const char* fragmentPath);
+    Shader(std::string vertexPath, std::string fragmentPath);
     
     // activate the shader
     // ------------------------------------------------------------------------

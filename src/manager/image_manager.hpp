@@ -1,16 +1,16 @@
 #pragma once
 #include "../core/globals.hpp"
+#include <string>
 
 class ImageManager {
 public:
     ImageManager() { };
     ~ImageManager() { };
 
-    GLFWwindow* createWindow(int width, int height);
-    GLFWwindow* getWindow();
+    Image* loadImage(std::string name, std::string resourcePath);
 
 private:
-    std::map<const char*, Image*> mImages;
+    std::map<std::string, Image*> mImages;
 
     struct ImageBuffers {
         unsigned int VBO;
