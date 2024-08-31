@@ -24,35 +24,9 @@ public:
     
     // camera options
     float MovementSpeed;
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 GetViewMatrix();
     
-    // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f)) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED) {
-        Position = position;
-        WorldUp = up;
-    }
-
-    glm::mat4 GetViewMatrix()
-    {
-        glm::mat4 view = glm::mat4(1.0f);
-        return glm::translate(view, Position);
-    }
-    
-    void UpdatePosition(glm::vec3 position) {
-        Position = position;
-    }
-    
-    void processInput(Camera_Movement direction, float deltaTime)
-    {
-        float velocity = MovementSpeed * deltaTime;
-        
-        if (direction == UP)
-            Position += velocity * glm::vec3(0.0f, -1.0f, 0.0f);
-        if (direction == DOWN)
-            Position += velocity * glm::vec3(0.0f, 1.0f, 0.0f);
-        if (direction == LEFT)
-            Position += velocity * glm::vec3(-1.0f, 0.0f, 0.0f);
-        if (direction == RIGHT)
-            Position += velocity * glm::vec3(1.0f, 0.0f, 0.0f);
-    }
-
+    void UpdatePosition(glm::vec3 position);
+    void processInput(Camera_Movement direction, float deltaTime);
 };

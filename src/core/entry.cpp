@@ -1,14 +1,14 @@
-#include "../manager/image_manager.hpp"
+#include "../render/manager/image_manager.hpp"
 #include "../manager/window_manager.hpp"
 #include "../render/shader.hpp"
 #include "../interface/camera.hpp"
-#include "../render/sprite.hpp"
+#include "../render/domain/image.hpp"
+#include "../render/domain/sprite.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-typedef unsigned int vbo_int, vao_int, ebo_int;
 
 float vertices[] = {
     // positions          // colors           // texture coords
@@ -30,43 +30,13 @@ glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-std::tuple<vbo_int, vao_int, ebo_int> GenerateImage() {
-    vbo_int VBO;
-    vao_int VAO;
-    ebo_int EBO;
-
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    
-    return { VBO, VAO, EBO };
-}
-
-void draw(GLFWwindow* window, Camera* camera, Shader shaderProgram, unsigned int VAO, Image* image)
+void draw(GLFWwindow* window, Camera* camera, Shader shaderProgram, unsigned int VAO, render::Sprite* image)
 {
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glBindTexture(GL_TEXTURE_2D, image->id);
+    glBindTexture(GL_TEXTURE_2D, image->getTextureId());
 
     // render container
     shaderProgram.use();
@@ -118,26 +88,21 @@ int start()
     WindowManager* windowManager = new WindowManager();
     GLFWwindow* window = windowManager->createWindow(800, 600);
 
-    ImageManager* imageManager = new ImageManager();
-    Image* image = imageManager->loadImage("player", "Resources/Images/Player.png");
+    render::ImageManager* imageManager = new render::ImageManager();
+    render::Image* image = imageManager->loadImage("player", "Resources/Images/Player.png");
+    
+    auto [ VBO, VAO, EBO ] = imageManager->generateBuffers(vertices, sizeof(vertices), indices, sizeof(indices));
+    auto sprite = imageManager->createSprite(image);
     
     Shader shaderProgram("Resources/Shaders/vertex_shader.vs", "Resources/Shaders/fragment_shader.fs");
     
-    auto [ VBO, VAO, EBO ] = GenerateImage ();
-    
-    std::cout << "Counter" << std::endl;
-   
     if(window != NULL){
         Camera* camera = new Camera();
         
         while (!glfwWindowShouldClose(window)) {
-            float currentFrame = static_cast<float>(glfwGetTime());
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
-            
             glBindVertexArray(VAO);
             processInput(window, camera);
-            draw(window, camera, shaderProgram, VAO, image);
+            draw(window, camera, shaderProgram, VAO, sprite);
         }
         
         glDeleteVertexArrays(1, &VAO);
