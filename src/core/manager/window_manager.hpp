@@ -1,5 +1,5 @@
 #pragma once
-#include "../core/globals.hpp"
+#include "core/globals.hpp"
 
 class WindowManager
 {

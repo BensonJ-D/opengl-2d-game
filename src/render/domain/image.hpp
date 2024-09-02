@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string>
 
-#include "../../core/globals.hpp"
-#include "../../core/opengl.hpp"
+#include "core/globals.hpp"
+#include "core/opengl.hpp"
 
 namespace render {
     class Image {

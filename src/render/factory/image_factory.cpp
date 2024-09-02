@@ -1,6 +1,7 @@
 #include "image_factory.hpp"
-#include "../domain/image.hpp"
-#include "../../core/opengl.hpp"
+
+#include "render/domain/image.hpp"
+#include "core/opengl.hpp"
 
 namespace render {
     ImageFactory::IImageResource::~IImageResource() { };
@@ -99,6 +100,7 @@ namespace render {
         mWidth = imgWidth;
         mHeight = imgHeight;
 
+        delete[] data;
         delete[] (png_bytep)rowPtrs;
         png_destroy_read_struct(&pngPtr, &infoPtr, (png_infopp)0);
     };

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "../core/opengl.hpp"
+#include "core/opengl.hpp"
 
 class Shader
 {

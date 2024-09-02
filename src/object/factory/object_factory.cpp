@@ -1,18 +1,9 @@
 #include "object_factory.hpp"
 
-#include "../domain/object.hpp"
-#include "../../render/domain/sprite.hpp"
+#include "object/domain/object.hpp"
 
 namespace obj {
-    ObjectFactory::ObjectFactory() {};
-    ObjectFactory::~ObjectFactory() {};
-    
-    Object* ObjectFactory::createObject(int x, int y) {
-        return new Object(x, y);
-    };
-    
-    Object* ObjectFactory::attachSprite(Object *pObject, render::Sprite *pSprite) {
-        pObject->setSprite(pSprite);
-        return pObject;
-    };
+    Object* ObjectFactory::create(int x, int y, IObject *pParent) {
+        return new Object(x, y, pParent);
+    }
 }

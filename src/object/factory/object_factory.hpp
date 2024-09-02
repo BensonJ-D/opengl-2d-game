@@ -1,14 +1,13 @@
 #pragma once
+#include <vector>
+#include <map>
 
-#include "../domain/object.hpp"
-#include "../../render/domain/sprite.hpp"
+#include "object/interface/object_factory_interface.hpp"
+#include "object/domain/object.hpp"
 
 namespace obj {
-    class ObjectFactory {
+    class ObjectFactory : public IObjectFactory {
         public:
-            ObjectFactory();
-            ~ObjectFactory();
-            Object* createObject(int x, int y);
-            Object* attachSprite(Object *pObject, render::Sprite *pSprite);
+            Object* create(int x, int y, IObject *pParent = nullptr) override;
     };
 }

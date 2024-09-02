@@ -1,8 +1,8 @@
 #pragma once
 #include <libpng/png.h>
 
-#include "../domain/image.hpp"
-#include "../../core/opengl.hpp"
+#include "render/domain/image.hpp"
+#include "core/opengl.hpp"
 
 namespace render {
     class ImageFactory {

@@ -1,12 +1,13 @@
-#include "../render/manager/image_manager.hpp"
-#include "../manager/window_manager.hpp"
-#include "../render/shader.hpp"
-#include "../interface/camera.hpp"
-#include "../render/domain/image.hpp"
-#include "../render/domain/sprite.hpp"
+#include "render/manager/image_manager.hpp"
+#include "core/manager/window_manager.hpp"
+#include "render/domain/shader.hpp"
+#include "render/camera.hpp"
+#include "render/domain/image.hpp"
+#include "object/domain/sprite.hpp"
+#include "object/factory/object_factory.hpp"
+#include "object/factory/sprite_factory.hpp"
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 
@@ -25,27 +26,20 @@ unsigned int indices[] = {
 };
 
 int counter = 0;
-
-glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-void draw(GLFWwindow* window, Camera* camera, Shader shaderProgram, unsigned int VAO, render::Sprite* image)
+void draw(GLFWwindow* window, Camera* camera, Shader shaderProgram, unsigned int VAO, obj::Sprite* sprite, obj::Sprite* sprite2)
 {
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-
-    glBindTexture(GL_TEXTURE_2D, image->getTextureId());
-
-    // render container
-    shaderProgram.use();
     
     glm::mat4 model         = glm::mat4(1.0f);
     glm::mat4 view          = camera->GetViewMatrix();
     glm::mat4 projection    = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -100.0f, 100.0f);
     
-    model         = glm::translate(model, position);
+    model         = sprite->getModelMatrix();
 
     shaderProgram.setMat4("projection", projection);
     shaderProgram.setMat4("view", view);
@@ -54,11 +48,26 @@ void draw(GLFWwindow* window, Camera* camera, Shader shaderProgram, unsigned int
 //    glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+    model         = glm::mat4(1.0f);
+    view          = camera->GetViewMatrix();
+    projection    = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -100.0f, 100.0f);
+    
+    if(sprite2) {
+        model         = sprite2->getModelMatrix();
+
+        shaderProgram.setMat4("projection", projection);
+        shaderProgram.setMat4("view", view);
+        shaderProgram.setMat4("model", model);
+
+    //    glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    }
+    
     glfwSwapBuffers(window);
     glfwPollEvents();
 }
 
-void processInput(GLFWwindow *window, Camera* camera)
+void processInput(GLFWwindow *window, Camera* camera, obj::IObject* pObject)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -71,16 +80,20 @@ void processInput(GLFWwindow *window, Camera* camera)
         camera->processInput(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera->processInput(RIGHT, deltaTime);
-    
-    float movementSpeed = static_cast<float>(72.5 * deltaTime);
+
+    float movementSpeed = static_cast<float>(2.5f);
+    glm::vec3 movement = glm::vec3(0.0f);
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        position += movementSpeed * glm::vec3(0.0f, -1.0f, 0.0f);
+        movement += movementSpeed * glm::vec3(0.0f, -1.0f, 0.0f);
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        position += movementSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+        movement += movementSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        position += movementSpeed * glm::vec3(-1.0f, 0.0f, 0.0f);
+        movement += movementSpeed * glm::vec3(-1.0f, 0.0f, 0.0f);
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        position += movementSpeed * glm::vec3(1.0f, 0.0f, 0.0f);
+        movement += movementSpeed * glm::vec3(1.0f, 0.0f, 0.0f);
+    
+    movement += pObject->getPosition();
+    pObject->setPosition(movement);
 }
 
 int start()
@@ -90,19 +103,35 @@ int start()
 
     render::ImageManager* imageManager = new render::ImageManager();
     render::Image* image = imageManager->loadImage("player", "Resources/Images/Player.png");
-    
     auto [ VBO, VAO, EBO ] = imageManager->generateBuffers(vertices, sizeof(vertices), indices, sizeof(indices));
-    auto sprite = imageManager->createSprite(image);
+    
+    obj::ObjectFactory* objectFactory = new obj::ObjectFactory();
+    obj::Object* object = objectFactory->create(rand() % 800, rand() % 600);
+    
+    obj::SpriteFactory* spriteFactory = new obj::SpriteFactory();
+    obj::Sprite* sprite = spriteFactory->create(image, 0, 0, object);
+    obj::Sprite* sprite2 = spriteFactory->create(image, 10, 10, object);
     
     Shader shaderProgram("Resources/Shaders/vertex_shader.vs", "Resources/Shaders/fragment_shader.fs");
     
     if(window != NULL){
         Camera* camera = new Camera();
+        glBindVertexArray(VAO);
+        
+        glBindTexture(GL_TEXTURE_2D, sprite->getTextureId());
+
+        // render container
+        shaderProgram.use();
         
         while (!glfwWindowShouldClose(window)) {
-            glBindVertexArray(VAO);
-            processInput(window, camera);
-            draw(window, camera, shaderProgram, VAO, sprite);
+            processInput(window, camera, object);
+            draw(window, camera, shaderProgram, VAO, sprite, sprite2);
+            counter++;
+            if(counter > 100 && sprite2) {
+                delete sprite2;
+                sprite2 = nullptr;
+                std::cout << "Deleting sprite 2" << std::endl;
+            }
         }
         
         glDeleteVertexArrays(1, &VAO);

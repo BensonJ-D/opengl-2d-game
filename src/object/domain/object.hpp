@@ -4,9 +4,9 @@
 namespace obj {
     class Object : public IObject {
         private:
+            using IObject::IObject;
             
         public:
-            Object(int x, int y);
             void update() override;
     };
 }
