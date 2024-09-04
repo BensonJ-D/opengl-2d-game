@@ -53,23 +53,13 @@ namespace render {
         mImages.emplace(name, image);
         return image;
     }
-
-//    Sprite* ImageManager::createSprite(Image* image) {
-//        Sprite* _sprite = new Sprite(0, 0, 32, 64, 0, 0, image);
-//
-//        auto keyExists = mSpriteBatches.count(image);
-//        if (keyExists != 1) {
-//            auto pair = std::pair<Image*, std::vector<Sprite*>*>(image, new std::vector<Sprite*>{ _sprite });
-//            mSpriteBatches.insert(pair);
-//            printf("New batch\n");
-//        } else {
-//            auto vector = mSpriteBatches.at(image);
-//            vector->push_back(_sprite);
-//            printf("Existing batch\n");
-//        }
-//
-//        printf("Number of sprite in batch: %lu\n", mSpriteBatches.at(image)->size());
-//
-//        return _sprite;
-//    }
+    
+    Image* ImageManager::getImage(std::string name) {
+        auto imagePair = mImages.find(name);
+        
+        if(imagePair == mImages.end()) {
+            return nullptr;
+        }
+        return imagePair->second;
+    }
 }

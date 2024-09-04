@@ -19,7 +19,7 @@ void Camera::UpdatePosition(glm::vec3 position) {
 
 void Camera::processInput(Camera_Movement direction, float deltaTime)
 {
-    float velocity = MovementSpeed * deltaTime;
+    float velocity = MovementSpeed;
     
     if (direction == UP)
         Position += velocity * glm::vec3(0.0f, 1.0f, 0.0f);

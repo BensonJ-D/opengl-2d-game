@@ -26,6 +26,7 @@ namespace render {
 
             ImageBuffers generateBuffers(float vertices[], unsigned long verticesSize, unsigned int indices[], unsigned long indicesSize);
             Image* loadImage(std::string name, std::string resourcePath);
+            Image* getImage(std::string name);
     };
 }
 

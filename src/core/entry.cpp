@@ -6,10 +6,12 @@
 #include "object/domain/sprite.hpp"
 #include "object/factory/object_factory.hpp"
 #include "object/factory/sprite_factory.hpp"
+#include "object/manager/sprite_manager.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <glm/ext.hpp>
+#include <iostream>
 
 float vertices[] = {
     // positions          // colors           // texture coords
@@ -29,39 +31,54 @@ int counter = 0;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-void draw(GLFWwindow* window, Camera* camera, Shader shaderProgram, unsigned int VAO, obj::Sprite* sprite, obj::Sprite* sprite2)
+void draw(GLFWwindow* window, Camera* camera, Shader shaderProgram, unsigned int instanceVBO, obj::SpriteManager* spriteManager)
 {
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    glm::mat4 model         = glm::mat4(1.0f);
     glm::mat4 view          = camera->GetViewMatrix();
     glm::mat4 projection    = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -100.0f, 100.0f);
-    
-    model         = sprite->getModelMatrix();
 
     shaderProgram.setMat4("projection", projection);
     shaderProgram.setMat4("view", view);
-    shaderProgram.setMat4("model", model);
-
-//    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    model         = glm::mat4(1.0f);
-    view          = camera->GetViewMatrix();
-    projection    = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -100.0f, 100.0f);
     
-    if(sprite2) {
-        model         = sprite2->getModelMatrix();
-
-        shaderProgram.setMat4("projection", projection);
-        shaderProgram.setMat4("view", view);
-        shaderProgram.setMat4("model", model);
-
-    //    glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    for(auto spriteBatch : spriteManager->mSpritesByImage){
+        glBindTexture(GL_TEXTURE_2D, spriteBatch.first->getTextureId());
+        
+        std::vector<glm::mat4> modelMatrices;
+        
+        for(auto sprite : *(spriteBatch.second)) {
+            modelMatrices.push_back(sprite->getModelMatrix());
+        }
+        
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * modelMatrices.size(), &modelMatrices[0], GL_STATIC_DRAW);
+        
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+        
+        int pos = 3;
+        int pos1 = pos + 0;
+        int pos2 = pos + 1;
+        int pos3 = pos + 2;
+        int pos4 = pos + 3;
+        glEnableVertexAttribArray(pos1);
+        glEnableVertexAttribArray(pos2);
+        glEnableVertexAttribArray(pos3);
+        glEnableVertexAttribArray(pos4);
+        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+        glVertexAttribPointer(pos1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(0));
+        glVertexAttribPointer(pos2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 4));
+        glVertexAttribPointer(pos3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 8));
+        glVertexAttribPointer(pos4, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 12));
+        glVertexAttribDivisor(pos1, 1);
+        glVertexAttribDivisor(pos2, 1);
+        glVertexAttribDivisor(pos3, 1);
+        glVertexAttribDivisor(pos4, 1);
+        
+        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (int)modelMatrices.size());
     }
+//    std::cin.get();
     
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -103,35 +120,35 @@ int start()
 
     render::ImageManager* imageManager = new render::ImageManager();
     render::Image* image = imageManager->loadImage("player", "Resources/Images/Player.png");
+    render::Image* enemyImage = imageManager->loadImage("enemy", "Resources/Images/Enemy.png");
     auto [ VBO, VAO, EBO ] = imageManager->generateBuffers(vertices, sizeof(vertices), indices, sizeof(indices));
     
-    obj::ObjectFactory* objectFactory = new obj::ObjectFactory();
-    obj::Object* object = objectFactory->create(rand() % 800, rand() % 600);
     
-    obj::SpriteFactory* spriteFactory = new obj::SpriteFactory();
-    obj::Sprite* sprite = spriteFactory->create(image, 0, 0, object);
-    obj::Sprite* sprite2 = spriteFactory->create(image, 10, 10, object);
+    unsigned int instanceVBO;
+    glGenBuffers(1, &instanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    
+    obj::ObjectFactory* objectFactory = new obj::ObjectFactory();
+    obj::Object* object = objectFactory->create();
+    
+    obj::SpriteManager* spriteManager = new obj::SpriteManager();
+    
+    for(int i = 0; i < 8000; i++) {
+        spriteManager->create(enemyImage, rand() % 800, rand() % 600, object);
+    }
     
     Shader shaderProgram("Resources/Shaders/vertex_shader.vs", "Resources/Shaders/fragment_shader.fs");
     
     if(window != NULL){
         Camera* camera = new Camera();
         glBindVertexArray(VAO);
-        
-        glBindTexture(GL_TEXTURE_2D, sprite->getTextureId());
 
         // render container
         shaderProgram.use();
         
         while (!glfwWindowShouldClose(window)) {
             processInput(window, camera, object);
-            draw(window, camera, shaderProgram, VAO, sprite, sprite2);
-            counter++;
-            if(counter > 100 && sprite2) {
-                delete sprite2;
-                sprite2 = nullptr;
-                std::cout << "Deleting sprite 2" << std::endl;
-            }
+            draw(window, camera, shaderProgram, instanceVBO, spriteManager);
         }
         
         glDeleteVertexArrays(1, &VAO);

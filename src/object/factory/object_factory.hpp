@@ -8,6 +8,6 @@
 namespace obj {
     class ObjectFactory : public IObjectFactory {
         public:
-            Object* create(int x, int y, IObject *pParent = nullptr) override;
+            Object* create(int x = 0, int y = 0, IObject *pParent = nullptr) override;
     };
 }

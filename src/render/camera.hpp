@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-const float SPEED       =  125.0f;
+const float SPEED       =  25.0f;
 const float SENSITIVITY =  0.1f;
 
 enum Camera_Movement {

@@ -55,6 +55,7 @@ GLFWwindow* WindowManager::createWindow(int width, int height)
     glEnable(GL_BLEND);
 
     std::cout << "Resizing display..." << std::endl;
+    glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
     std::cout << "Setup complete, proceeding to main loop.\n" << std::endl;
